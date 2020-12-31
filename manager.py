@@ -11,8 +11,9 @@ Created on Sun Dec 20 10:35:19 2020
 import pandas as pd
 import networkx as nx
 from viewer import TkPassthroughViewerApp
+
 import csv
-reader = csv.DictReader(open('/home/user/list4'), fieldnames=['qube','netvm','color','klass'],delimiter='|')
+reader = csv.DictReader(open('/home/user/list4'), fieldnames=['qube','netvm','label','klass'],delimiter='|')
 
 d = {}
 e = {}
@@ -26,14 +27,17 @@ for key,value in d.items():
     else:
         if value['netvm'] != '-':
             e[key] = value['netvm']
-
     
 qubes = list(e.keys())
 netvms = list(e.values())
 df = pd.DataFrame({ 'from':qubes, 'to':netvms})
-
 G = nx.from_pandas_edgelist(df, 'from', 'to' )
 
+for qube in G.nodes:
+    if qube != '-':
+        G.nodes[qube]['color'] = d[qube]['label']
+        if d[qube]['klass'] == 'TemplateVM':
+            G.nodes[qube]['label_fill'] = 'red'
 
 Viewer = TkPassthroughViewerApp
 app = Viewer(G)
