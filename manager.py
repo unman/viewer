@@ -4,7 +4,7 @@
 Created on Sun Dec 20 10:35:19 2020
 
 @author: user
-"""
+    """
 
 # libraries
 
@@ -13,7 +13,7 @@ import networkx as nx
 from viewer import TkPassthroughViewerApp
 
 import csv
-reader = csv.DictReader(open('/home/user/list4'), fieldnames=['qube','netvm','label','klass'],delimiter='|')
+reader = csv.DictReader(open('/home/user/list11'), fieldnames=['qube','netvm','label','klass','template','IP','IPBACK','GATEWAY','visible_ip','visible_netmask','visible_gateway'],delimiter='|')
 
 d = {}
 e = {}
@@ -36,9 +36,13 @@ G = nx.from_pandas_edgelist(df, 'from', 'to' )
 for qube in G.nodes:
     if qube != '-':
         G.nodes[qube]['color'] = d[qube]['label']
+        G.nodes[qube]['Details'] = d[qube]
         if d[qube]['klass'] == 'TemplateVM':
             G.nodes[qube]['label_fill'] = 'red'
+        #if G.has_edge(qube,'-'):
+         #   G.remove_edge(qube,'-')
 
+#G.remove_edge('net-tablet','-')
 Viewer = TkPassthroughViewerApp
 app = Viewer(G)
 app.mainloop()
