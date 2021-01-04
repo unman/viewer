@@ -16,7 +16,6 @@ Or use `include/admin-global-rwx`
 To have read only permissions, edit `include/admin-global-ro` 
 
 TBD: Add to action menus - qvm-prefs
-TBD: Add ability to rename qube for anonymisation
 TBD: Add ability to create notes
 
 TBD: Remove nulls- - they are weighting the display badly and confuse - why is 'None' treated as a node?  
