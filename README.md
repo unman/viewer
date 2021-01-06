@@ -8,9 +8,8 @@ Highlights any Templates that are connected to a netvm
 Change display name, hide or highlight qubes and paths for sharing.  
 Roll over to display qube information.
 
-Obligatory screenshot:  
-![Screenshot](screenshot.png)
-
+Obligatory screenshot:    
+<img src="network.png" alt="Screenshot" />
 
 Install networkx, networkx_viewer  
 Generate data file from:  
