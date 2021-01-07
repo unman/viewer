@@ -1,6 +1,6 @@
 import tkinter as tk
 import subprocess
-
+from tkinter import scrolledtext 
 from networkx_viewer.graph_canvas import GraphCanvas
 from networkx_viewer.tokens import (NodeToken, EdgeToken)
 
@@ -29,6 +29,45 @@ def qname(self,event):
     token.coords(token.marker, mid[0]-5,0, mid[0]+5,10)
 
 class CustomGraphCanvas(GraphCanvas):
+    class CustomNoteToken(NodeToken):
+
+        def __init__(self, host_canvas, data, node_name):
+            tk.Canvas.__init__(self, width=50, height=70)
+    
+            self._host_canvas = host_canvas
+            self._complete = True
+            self._marked = False
+            self._default_bg = 'Red'
+    
+            self.bind('<ButtonPress-1>', self._host_event('onNodeButtonPress'))
+            self.bind('<ButtonRelease-1>', self._host_event('onNodeButtonRelease'))
+            self.bind('<B1-Motion>', self._host_event('onNodeMotion'))
+#
+#        self.bind('<Button-3>', self._host_event('onTokenRightClick'))
+#
+#        self.bind('<Key>', self._host_event('onNodeKey'))
+#        self.bind('<Enter>', lambda e: self.focus_set())
+#        self.bind('<Leave>', lambda e: self.master.focus())
+
+        # Draw myself
+            self.render(data, node_name)
+
+        def render(self, data, node_name):
+            self.config(width=100, height=50)
+            w = tk.Frame(self,bg='blue',bd=3,width=50,height=60)
+            w.pack()
+            text = tk.scrolledtext.ScrolledText(w,  
+                                      wrap = tk.WORD,  
+                                      width = 30,  
+                                      height = 10,
+                                      bg='white'
+                                      ) 
+            #item = self._get_id(event)
+            #node_name = self.dispG.nodes[item]['dataG_id']
+            contents = "Some text \n"*8
+            text.insert(1.0,contents)
+            text.pack(side='right', expand=False)
+        
     def onTokenRightClick(self, event):
         item = self._get_id(event)
         name = self.dispG.nodes[item]['dataG_id']
@@ -41,51 +80,53 @@ class CustomGraphCanvas(GraphCanvas):
                           command=lambda: qname(self,event))
         popup.add_command(label='Mark', command=lambda: self.mark_node(item))
         popup.add_command(label='Hide', command=lambda: self.hide_node(item))
+        popup.add_command(label='Note', command=lambda: self.add_note(event))        
         try:
             popup.post(event.x_root, event.y_root)
         finally:
             popup.grab_release()
             
     def see_note(self,event):
-#        info = """Click the bubbles that are multiples of two.
-#whatever goes here
-#  self.placeholder = self.create_text(5, 5, anchor='nw', fill="darkblue",
-#                        text = info )
-#        
-#    def delete_note(self,event):
-#        self.delete(self.placeholder)
-#        
-#class CustomNodeToken(NodeToken):
-#    def render(self, data, node_name):
-#        self.config(width=50, height=50)
-#        
-#        # Set color and other options
-#        marker_options = {'fill':       data.get('color','red'),
-#                          'outline':    'black'}
-#        self.marker = self.create_oval(0,0,10,10, **marker_options)
-#        self.label = self.create_text(0, 0, text=node_name)
-#        cfg = self.itemconfig(self.label)
-#        for k,v in cfg.copy().items():
-#            cfg[k] = data.get('label_'+k, cfg[k][-1])
-#        self.itemconfig(self.label, **cfg)
-#        self._default_label_color = data.get('label_fill','
-#
-# [print(key, value) for key, value in Details.items()]
-#"""
         item = self._get_id(event)
         name = self.dispG.nodes[item]['dataG_id']
-        Details = self.dataG.nodes[name]['Details']
-#        info=[]
-#        for k,v in Details.items():
-#            info = print(k, ":", v)
-#        info = [print(key, value) for key,value in Details.items()]
-        self.placeholder = self.create_text(5, 5, anchor='nw', fill="darkblue",
-                        text = name )
-        for key,value in Details.items():
-            self.insert(self.placeholder,tk.END,"\n"+key+":"+"\t"+value )
-        
+        if 'Details' in self.dataG.nodes[name]:
+            Details = self.dataG.nodes[name]['Details']
+            self.placeholder = self.create_text(5, 5, anchor='nw', fill="darkblue",
+                            text = name )
+            for key,value in Details.items():
+                self.insert(self.placeholder,tk.END,"\n"+key+":"+"\t"+value )
+            
     def delete_note(self,event):
         self.delete(self.placeholder)
+        
+    def add_note(self, event):
+        """Create a token for the data_node at the given coordinater"""
+        item = self._get_id(event)
+        source_name = self.dispG.nodes[item]['dataG_id']
+        (x,y) = (event.x+100,event.y-100)
+        data = self.dataG[source_name]
+        data_node = source_name+"_note"
+        # Apply filter to node to make sure we should draw it
+        for filter_lambda in self._node_filters:
+            try:
+                draw_flag = eval(filter_lambda, {'u':data_node, 'd':data})
+            except Exception as e:
+                self._show_filter_error(filter_lambda, e)
+                return
+            # Filters are applied as an AND (ie, all must be true)
+            # So if one is false, exit
+            if draw_flag == False:
+                return
+            #self.create_window(event.x+10,event.y-20,window=text)
+        # Create token and draw node
+        token = self.CustomNoteToken(self, data, data_node)
+        id = self.create_window(x, y, window=token, anchor=tk.CENTER,
+                                  tags='node')
+        self.dispG.add_node(id, dataG_id=data_node,
+                                 token_id=id, token=token)
+       #self.node_list.insert(tk.END, id)
+        self.dataG.add_node(data_node)
+        return id
          
  
 class CustomNodeToken(NodeToken):
