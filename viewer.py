@@ -42,14 +42,7 @@ class CustomGraphCanvas(GraphCanvas):
             self.bind('<ButtonPress-1>', self._host_event('onNodeButtonPress'))
             self.bind('<ButtonRelease-1>', self._host_event('onNodeButtonRelease'))
             self.bind('<B1-Motion>', self._host_event('onNodeMotion'))
-#
-#        self.bind('<Button-3>', self._host_event('onTokenRightClick'))
-#
-#        self.bind('<Key>', self._host_event('onNodeKey'))
-#        self.bind('<Enter>', lambda e: self.focus_set())
-#        self.bind('<Leave>', lambda e: self.master.focus())
 
-        # Draw myself
             self.render(data, node_name)
 
         def render(self, data, node_name):
@@ -61,11 +54,7 @@ class CustomGraphCanvas(GraphCanvas):
                                       width = 30,  
                                       height = 10,
                                       bg='white'
-                                      ) 
-            #item = self._get_id(event)
-            #node_name = self.dispG.nodes[item]['dataG_id']
-            contents = "Some text \n"*8
-            text.insert(1.0,contents)
+                                      )
             text.pack(side='right', expand=False)
         
     def onTokenRightClick(self, event):
@@ -117,8 +106,6 @@ class CustomGraphCanvas(GraphCanvas):
             # So if one is false, exit
             if draw_flag == False:
                 return
-            #self.create_window(event.x+10,event.y-20,window=text)
-        # Create token and draw node
         token = self.CustomNoteToken(self, data, data_node)
         id = self.create_window(x, y, window=token, anchor=tk.CENTER,
                                   tags='node')
@@ -180,13 +167,6 @@ class ViewerApp(tk.Tk):
 
     def onNodeSelected(self, node_name, node_dict):
         return
-#        self.tbl_attr.build(node_dict)
-#        self.lbl_attr.config(text="Attributes of node '%s'"%node_name)
-
-#    def onEdgeSelected(self, edge_name, edge_dict):
-#        self.tbl_attr.build(edge_dict)
-#        self.lbl_attr.config(text="Attributes of edge between '%s' and '%s'"%
-#                                    edge_name[:2])
 
 class TkPassthroughViewerApp(ViewerApp):
     def __init__(self, graph, **kwargs):
