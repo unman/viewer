@@ -40,6 +40,58 @@ def qfirewall(qube):
 
 
 class CustomGraphCanvas(GraphCanvas):
+    def __init__(self, graph, **kwargs):
+        self.dataG = graph
+
+        self.dispG = nx.MultiGraph()
+
+        self._drag_data = {'x': 0, 'y': 0, 'item': None}
+        self._pan_data = (None, None)
+        self._node_filters = ["str(u)!='-'","str(u)!='dom0'"]
+
+        # Undo list
+        self._undo_states = []
+        self._redo_states = []
+        self._undo_suspend = False
+
+        # Create a display version of this graph
+        # If requested, plot only within a certain level of the home node
+        home_node = kwargs.pop('home_node', None)
+        if home_node:
+            levels = kwargs.pop('levels', 1)
+            graph = self._neighbors(home_node, levels=levels, graph=graph)
+
+        # Class to use when create a node widget
+        self._NodeTokenClass = kwargs.pop('NodeTokenClass',
+                                          NodeToken)
+        assert issubclass(self._NodeTokenClass, NodeToken), \
+            "NodeTokenClass must be inherited from NodeToken"
+        self._EdgeTokenClass = kwargs.pop('EdgeTokenClass',
+                                          EdgeToken)
+        assert issubclass(self._EdgeTokenClass, EdgeToken), \
+            "NodeTokenClass must be inherited from NodeToken"
+
+        ###
+        # Now we can do UI things
+        ###
+        tk.Canvas.__init__(self, **kwargs)
+
+        self._plot_graph(graph)
+
+        self.center_on_node(home_node or next(iter(graph.nodes())))
+
+        self.tag_bind('node', '<ButtonPress-1>', self.onNodeButtonPress)
+        self.tag_bind('node', '<ButtonRelease-1>', self.onNodeButtonRelease)
+        self.tag_bind('node', '<B1-Motion>', self.onNodeMotion)
+
+#        self.tag_bind('edge', '<Button-1>', self.onEdgeClick)
+        self.tag_bind('edge', '<Button-3>', self.onEdgeRightClick)
+
+        self.bind('<ButtonPress-1>', self.onPanStart)
+        self.bind('<ButtonRelease-1>', self.onPanEnd)
+        self.bind('<B1-Motion>', self.onPanMotion)
+
+
     class CustomNoteToken(NodeToken):
 
         def __init__(self, host_canvas, data, node_name):
