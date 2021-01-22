@@ -142,7 +142,7 @@ class CustomGraphCanvas(GraphCanvas):
         item = self._get_id(event, 'edge')
         for u, v, k, d in self.dispG.edges(keys=True, data=True):
             if d['token'].id == item:
-                source = d['dataG_id'[0]]
+                source = d['dataG_id'][0]
                 break
 
         popup = tk.Menu(self, tearoff=0)
