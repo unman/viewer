@@ -34,6 +34,11 @@ def qname(self, event):
     token.coords(token.marker, mid[0]-5, 0, mid[0]+5, 10)
 
 
+def qfirewall(qube):
+    lcommand = ['qubes-vm-settings --tab firewall', qube]
+    subprocess.call(lcommand)
+
+
 class CustomGraphCanvas(GraphCanvas):
     class CustomNoteToken(NodeToken):
 
@@ -90,6 +95,7 @@ class CustomGraphCanvas(GraphCanvas):
 
         popup = tk.Menu(self, tearoff=0)
         popup.add_command(label='Mark', command=lambda: self.mark_edge(u, v, k))
+        popup.add_command(label='Firewall', command=lambda: qfirewall(source))
         d['token'].customize_menu(popup)
 
         try:
@@ -163,6 +169,11 @@ class CustomNodeToken(NodeToken):
         self.coords(self.marker, mid[0]-5, 0, mid[0]+5, 10)
         self.bind('<Enter>', self._host_event('see_note'))
         self.bind('<Leave>', self._host_event('delete_note'))
+        if 'Details' in data:
+            if data['Details']['klass'] == 'TemplateVM':
+                self.mark()
+            if data['Details']['klass'] == 'StandaloneVM':
+                self.config(bg='blue')
 
 
 class ViewerApp(tk.Tk):
